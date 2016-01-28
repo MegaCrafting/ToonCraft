@@ -1,0 +1,11 @@
+name: ToonCraft
+main: com.megacraft.tooncraft.ToonCraft
+version: 0.1
+author: chandlerpl
+authors: []
+
+commands:
+  tooncraft:
+    aliases: [tc]
+    usage: /<command>
+permissions:
