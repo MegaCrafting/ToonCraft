@@ -29,16 +29,16 @@ public class InventoryGUIs {
 		Inventory Inv = Bukkit.createInventory(null, 27, ChatColor.RED + "Please select a gag to use!");
 		Menu menu = new Menu(Inv);		
 		
+		inventoryContents.put(player, player.getInventory().getContents());
+		player.getInventory().clear();
+		
 		for (int i = 0; i < Gags.size(); i++) {
 			PreparedStatement stafflist;
 			try {
 				stafflist = DBConnection.sql.getConnection().prepareStatement(DBConnection.Select + "tc_Gags" + Gags.get(i) + " WHERE uuid = ?");
 				stafflist.setString(1, player.getUniqueId().toString());
 				ResultSet rs = stafflist.executeQuery();		
-				
-				inventoryContents.put(player, player.getInventory().getContents());
-				player.getInventory().clear();
-							
+											
 				for (int i1 = 1; i1 <= 7; i1++) {					
 					ItemStack itemStack = new ItemStack(Material.EGG, rs.getInt("L"+String.valueOf(i1)+"Amount"));
 					ItemMeta itemMeta = itemStack.getItemMeta(); // You must declare a separate variable for the meta for this to work. i.e. You can NOT just use: itemStack.getItemMeta().setDisplayName("§aWool");

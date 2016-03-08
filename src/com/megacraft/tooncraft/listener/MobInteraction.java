@@ -72,11 +72,21 @@ public class MobInteraction implements Listener {
 	public void onEntityDeath(EntityDeathEvent event) {
 		LivingEntity mob = event.getEntity();
 		Player player = event.getEntity().getKiller();
-		ItemStack[] inv = InventoryGUIs.inventoryContents.get(player);
 		
-		for(int i = 0; i <= inv.length; i++) {
-			player.getInventory().addItem(inv[i]);
+		if(!InventoryGUIs.inventoryContents.containsKey(player)) {
+			return;
+		} else {
+			for(ItemStack is:InventoryGUIs.inventoryContents.get(player)) {
+				if(is != null) {
+					player.getInventory().addItem(is);
+				}
+			}
 		}
+		/*for(int i = 0; i <= inv.length; i++) {
+			if(inv[i] != null) {
+				player.getInventory().addItem(inv[i]);
+			}
+		}*/
 		InventoryGUIs.inventoryContents.remove(player);
 		
 		mobBlockRemoval(mob, player);
