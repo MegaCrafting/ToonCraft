@@ -79,13 +79,7 @@ public class MainListener implements Listener {
 	public void onPlayerClick(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
 		if(event.getAction() == Action.LEFT_CLICK_AIR) {
-            LineEffect eff = new LineEffect(ToonCraft.getEM());
-            eff.particle = ParticleEffect.WATER_DROP;
-            eff.particles = 50;
-            eff.setDynamicOrigin(new DynamicLocation(player.getLocation().add(0,1,0))); //adjust the Y value for height
-            eff.setDynamicTarget(new DynamicLocation(player.getLocation().clone().add(player.getLocation().getDirection().clone().multiply(20))));
-            eff.isZigZag = false; //if you want it to zigzag
-            eff.start();
+            PlayerAttack.attackSquirt(player, 1);
 		}
 	}
 	
