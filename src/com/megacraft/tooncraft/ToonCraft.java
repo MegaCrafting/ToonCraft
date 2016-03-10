@@ -10,7 +10,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 
+import com.megacraft.timers.MobTimer;
 import com.megacraft.tooncraft.commands.Commands;
 import com.megacraft.tooncraft.configuration.ConfigManager;
 import com.megacraft.tooncraft.listener.MainListener;
@@ -24,6 +27,9 @@ public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
 	public static ToonCraft plugin;
 	public static Logger log;
     
+	public static Plugin wg;
+	public static List<BukkitTask> tasks = new ArrayList<BukkitTask>();
+	
     public static Boolean InventoryAPIEnabled = true;
 	public static List<LivingEntity> interactables = new ArrayList<LivingEntity>();
 	
@@ -59,6 +65,15 @@ public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
 		getServer().getPluginManager().registerEvents(new TutorialListener(this), this);
 		getServer().getPluginManager().registerEvents(new Commands(this), this);
 		
+		wg = ToonCraft.plugin.getServer().getPluginManager().getPlugin("WorldGuard");
+		if(wg != null) {
+			 tasks.add(ToonCraft.plugin.getServer().getScheduler().runTaskTimer(this, new MobTimer(this), 0, 5000l));
+			System.out.println("ToonCraft:  Starting random mob timer.");
+		} else {
+			System.out.println("ToonCraft:  Failed to find worldguard, unable to auto spawn mobs!");
+		}
+		
+		
 	}
 	
 	@Override
@@ -73,6 +88,9 @@ public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
 			MobInteraction.mobBlockRemoval(mob, null);
 		}	
 
+		for(BukkitTask bt: tasks)
+			bt.cancel();
+		
 		for(int i = 0; i < ToonCraft.interactables.size(); i++) {
         	interactables.get(i).damage(100);
 		}		

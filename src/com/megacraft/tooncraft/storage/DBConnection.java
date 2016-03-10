@@ -115,6 +115,8 @@ public class DBConnection {
 	}
 	
 	public static void TCApproved(Player player, String name, String approvalType, String approved) {
+		
+		
 		try {
 			PreparedStatement stafflist = DBConnection.sql.getConnection().prepareStatement(Select + "tc_playersInfo WHERE player = ?");
 			stafflist.setString(1, name);
@@ -134,10 +136,12 @@ public class DBConnection {
 				if(rs.next()) {
 					player.sendMessage("Player " + rs.getString(1) + " needs approving.");
 				}
+				
 			} else if(approvalType.equalsIgnoreCase("show")) {
 				stafflist = DBConnection.sql.getConnection().prepareStatement(Select + "tc_playersInfo WHERE player = ?");
 				stafflist.setString(1, name);
 				rs = stafflist.executeQuery();
+				
 				if(rs.next()) {
 					player.sendMessage("Player " + name + " is using " + rs.getString(5) + " " + rs.getString(6) + " " + rs.getString(7) + " as their Toon name.");
 					
@@ -149,11 +153,13 @@ public class DBConnection {
 						player.sendMessage("This players name has been approved by a member of staff and does not need any further action.");
 					}
 				}
+					
 			}
-			
+				
 		} catch (SQLException c) {
 			c.printStackTrace();
 		}
+		
 	}
 	
 	public static boolean isOpen() {
