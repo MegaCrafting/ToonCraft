@@ -26,6 +26,6 @@ public class ChatLoader {
 		player.sendMessage("There are evil mobs taking over mega craft, and you have to stop them!");
 		player.sendMessage("Quickly! There is a mob outside! Please help us by killing it!");
 		
-		MobSpawner.CreeperSpawner(player);
+		CogSpawner.CreeperSpawner(player, 1);
 	}
 }

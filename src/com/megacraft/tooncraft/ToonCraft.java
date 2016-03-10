@@ -2,6 +2,7 @@ package com.megacraft.tooncraft;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -17,7 +18,9 @@ import com.megacraft.tooncraft.listener.MainListener;
 import com.megacraft.tooncraft.listener.MobInteraction;
 import com.megacraft.tooncraft.storage.DBConnection;
 import com.megacraft.tooncraft.tutorial.TutorialListener;
-import com.megacraft.tooncraft.utilities.InventoryGUIs;
+
+import de.slikey.effectlib.EffectLib;
+import de.slikey.effectlib.EffectManager;
 
 public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
 	
@@ -27,9 +30,19 @@ public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
     public static Boolean InventoryAPIEnabled = true;
 	public static List<LivingEntity> interactables = new ArrayList<LivingEntity>();
 	
-	public static List<LivingEntity> mobFightMode = new ArrayList<LivingEntity>();
-	public static List<Player> playerFightMode = new ArrayList<Player>();
-    
+	
+	public static HashMap<Player, LivingEntity> mobFightMode = new HashMap<Player, LivingEntity>();    
+	
+	private static EffectManager EM;
+	
+	public static EffectManager getEM() {
+		return ToonCraft.EM;
+	}
+	
+	public static void setEM(final EffectManager eM) {
+		ToonCraft.EM = eM;
+	}
+	
 	@Override
 	public void onEnable() {
 		ToonCraft.plugin = this;
@@ -40,6 +53,13 @@ public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
         } else {
         	InventoryAPIEnabled = true;
         }
+        
+        final EffectLib lib = EffectLib.instance();
+        if (lib != null) {
+         ToonCraft.setEM(new EffectManager(lib));
+         System.out.println("Enabling custom particle effects");
+        }
+        
         
 		File mainfile = new File(plugin.getDataFolder().toString());
 		if (!mainfile.exists()) {
@@ -67,10 +87,10 @@ public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
 			DBConnection.sql.close();
 		}
 		
-		for(int i = 0; i < ToonCraft.mobFightMode.size(); i++) {
-			LivingEntity mob = mobFightMode.get(i);
+		for (Player p: mobFightMode.keySet()) {
+			LivingEntity mob = mobFightMode.get(p);
 			mob.damage(100);
-			MobInteraction.mobBlockRemoval(mob, null);
+			MobInteraction.mobBlockRemoval(mob, p);
 		}	
 
 		for(int i = 0; i < ToonCraft.interactables.size(); i++) {

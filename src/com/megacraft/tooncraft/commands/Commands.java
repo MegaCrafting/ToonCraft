@@ -15,6 +15,7 @@ import org.bukkit.inventory.ItemStack;
 import com.megacraft.tooncraft.ToonCraft;
 import com.megacraft.tooncraft.tutorial.TutorialLoader;
 import com.megacraft.tooncraft.utilities.InventoryGUIs;
+import com.megacraft.tooncraft.utilities.CogSpawner;
 
 public class Commands implements Listener {
 	
@@ -29,6 +30,7 @@ public class Commands implements Listener {
 	public static String[]guialiases = { "gui" };
 	public static String[]renamealiases = { "rename" };
 	public static String[]approvalaliases = { "approve" };
+	public static String[]mobaliases = { "mob" };
 	
 	//Miscellaneous
 	public static String[] cmdaliases = new String[] { "/tooncraft", "/tc" };
@@ -59,6 +61,9 @@ public class Commands implements Listener {
 				return;
 			} else if(Arrays.asList(approvalaliases).contains(args[1])) {
 				ApproveCommand.execute(player, sendingArgs);
+				return;
+			} else if(Arrays.asList(mobaliases).contains(args[1])) {
+				CogSpawner.spawnFlunky(1);
 				return;
 			} else if("test".equals(args[1])) {
 				ItemStack[] inv = InventoryGUIs.inventoryContents.get(player);

@@ -29,7 +29,7 @@ public class MobInteraction implements Listener {
 		Location plrLoc = player.getLocation();
 		LivingEntity mob = getNearbyInteractable(plrLoc, 2);
 		
-		if(ToonCraft.playerFightMode.contains(player)) {
+		if(ToonCraft.mobFightMode.containsKey(player)) {
 			Location plrLoc1 = new Location(player.getWorld(), Math.floor(player.getLocation().getX())+0.5, player.getLocation().getBlockY(), Math.floor(player.getLocation().getZ())+0.5, -90, 0);
 			player.teleport(plrLoc1);
 		}
@@ -39,13 +39,13 @@ public class MobInteraction implements Listener {
 		} else {
 			player.sendMessage("You are near a " + ChatColor.stripColor(mob.getCustomName()));
 			ToonCraft.interactables.remove(mob);
-			ToonCraft.mobFightMode.add(mob);
+			ToonCraft.mobFightMode.put(player, mob);
 			Location mobLoc = new Location(mob.getWorld(), Math.floor(mob.getLocation().getX())+0.5, mob.getLocation().getBlockY(), Math.floor(mob.getLocation().getZ())+0.5, 90, 0);
 			mob.teleport(mobLoc);
 			
 			Location plrLoc1 = new Location(mob.getWorld(), Math.floor(mob.getLocation().getX())-5.5, mob.getLocation().getBlockY(), Math.floor(mob.getLocation().getZ())+0.5, -90, 0);
 			player.teleport(plrLoc1);
-		    ToonCraft.playerFightMode.add(player);
+		    ToonCraft.mobFightMode.put(player, mob);
 			
 			if(mob.getLocation().add(0, 2, 0).getBlock().getType() == Material.AIR) {
 				mob.getLocation().add(0, 2, 0).getBlock().setType(Material.STONE);
@@ -93,13 +93,9 @@ public class MobInteraction implements Listener {
 	}
 
 	public static void mobBlockRemoval(LivingEntity mob, Player player) {
-		if(ToonCraft.mobFightMode.contains(mob)) {
-			ToonCraft.mobFightMode.remove(mob);
-			
-			if(player != null) {
-				ToonCraft.playerFightMode.remove(player);
-			}
-						
+		if(ToonCraft.mobFightMode.containsKey(player)) {
+			ToonCraft.mobFightMode.remove(player);
+					
 			if(mob.getLocation().add(0, 2, 0).getBlock().getType() == Material.STONE) {
 				mob.getLocation().add(0, 2, 0).getBlock().setType(Material.AIR);
 			}

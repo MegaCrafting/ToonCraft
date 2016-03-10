@@ -6,5 +6,6 @@
 	<classpathentry kind="lib" path="H:/MegaCraft/Avatar/Vault.jar"/>
 	<classpathentry kind="lib" path="H:/MegaCraft/ToonCraft/InventoryAPI.jar"/>
 	<classpathentry kind="lib" path="H:/MegaCraft/Avatar/Essentials-2.x-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="H:/MegaCraft/EffectLibD.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
