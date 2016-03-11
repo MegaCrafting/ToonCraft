@@ -78,7 +78,7 @@ public class MobTimer implements Runnable {
 						if(b.getType() == Material.BEDROCK)
 						{
 							currentBlock = b;
-							b.setType(Material.DIAMOND_BLOCK);
+							
 							pathBlocks.add(currentBlock);
 							nextFound = true;
 							break;
