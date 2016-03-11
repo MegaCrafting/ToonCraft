@@ -6,11 +6,21 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
+
+
+
+import net.minecraft.server.v1_9_R1.Material;
+
+import org.bukkit.entity.Item;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import com.megacraft.tooncraft.ToonCraft;
@@ -26,6 +36,22 @@ public class MainListener implements Listener {
 		this.plugin = plugin;
 	}
 	
+	@EventHandler(priority = EventPriority.NORMAL)
+	public void onCogDamage(EntityDamageEvent event) {
+		
+		if(event.getEntity() instanceof LivingEntity) {
+			LivingEntity e = (LivingEntity) event.getEntity();
+		
+			if(ToonCraft.interactables.contains(e))
+			{
+				String[] name = e.getCustomName().split("\\(");
+				long health = Math.round(e.getHealth() * 100) / 100;
+				
+				
+				e.setCustomName(name[0] + "(" + health + ")");
+			}
+		}
+	}
 	@EventHandler(priority = EventPriority.NORMAL)
 	public void onPlayerJoin(PlayerJoinEvent event) {
 		final Player player = event.getPlayer();

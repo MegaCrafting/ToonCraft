@@ -32,9 +32,10 @@ public class MobSpawner {
 	}
 	public static void FlunkySpawn(Location loc) {
 		
-		Zombie flunky = (Zombie) loc.getWorld().spawn(loc, Zombie.class);
+		Zombie flunky = (Zombie) loc.getWorld().spawn(loc.add(0,7,0), Zombie.class);
 		flunky.setBaby(false);
 		flunky.setCustomNameVisible(true);
+		flunky.setVelocity(flunky.getVelocity().setY(1.2));
 		int lvl = ThreadLocalRandom.current().nextInt(1,5);
 		
 		flunky.setMaxHealth(getHealth(lvl));

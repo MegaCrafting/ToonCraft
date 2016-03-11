@@ -13,14 +13,22 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import com.megacraft.timers.MobTimer;
+
+
+
+
 import com.megacraft.tooncraft.commands.Commands;
 import com.megacraft.tooncraft.configuration.ConfigManager;
 import com.megacraft.tooncraft.listener.MainListener;
 import com.megacraft.tooncraft.listener.MobInteraction;
 import com.megacraft.tooncraft.storage.DBConnection;
+import com.megacraft.tooncraft.timers.FallTimer;
+import com.megacraft.tooncraft.timers.MobTimer;
 import com.megacraft.tooncraft.tutorial.TutorialListener;
 import com.megacraft.tooncraft.utilities.InventoryGUIs;
+
+import de.slikey.effectlib.EffectLib;
+import de.slikey.effectlib.EffectManager;
 
 public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
 	
@@ -35,7 +43,8 @@ public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
 	
 	public static List<LivingEntity> mobFightMode = new ArrayList<LivingEntity>();
 	public static List<Player> playerFightMode = new ArrayList<Player>();
-    
+
+	public static EffectManager em;
 	@Override
 	public void onEnable() {
 		ToonCraft.plugin = this;
@@ -68,10 +77,14 @@ public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
 		wg = ToonCraft.plugin.getServer().getPluginManager().getPlugin("WorldGuard");
 		if(wg != null) {
 			 tasks.add(ToonCraft.plugin.getServer().getScheduler().runTaskTimer(this, new MobTimer(this), 0, 5000l));
+			 tasks.add(ToonCraft.plugin.getServer().getScheduler().runTaskTimer(this, new FallTimer(this), 0, 5l));
 			System.out.println("ToonCraft:  Starting random mob timer.");
 		} else {
 			System.out.println("ToonCraft:  Failed to find worldguard, unable to auto spawn mobs!");
 		}
+		
+		EffectLib lib = EffectLib.instance();
+		em = new EffectManager(lib);
 		
 		
 	}
