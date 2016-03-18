@@ -59,9 +59,26 @@ public class MobInteraction implements Listener {
 		if(mob == null){
 			
 		} else {
+			if(!ToonCraft.playerFightMode.isEmpty() && ToonCraft.playerFightMode.contains(player))  //dont let mobs come up and bother the player whilst he / she is fighting.
+				return;
+			
 			player.sendMessage("You are near a " + ChatColor.stripColor(mob.getCustomName()));
 			ToonCraft.interactables.remove(mob);
-			ToonCraft.mobFightMode.add(mob);
+			//ToonCraft.mobFightMode.add(mob);
+			
+			List<Player> fighting = new ArrayList<Player>(); //list of players fighting this monster.
+			if(ToonCraft.mobFightMode.isEmpty() || !ToonCraft.mobFightMode.containsKey(mob))  //mob isn't fighting anyone at the moment!
+			{
+				player.sendMessage("initiating combat with: " + mob.getName());
+				fighting.add(player);
+				ToonCraft.mobFightMode.put(mob, fighting);  //add the first player
+			} else {  //mob is already fighting someone... let another player join!
+				fighting = ToonCraft.mobFightMode.get(mob);
+				if(!fighting.contains(player)) //check to see if this player is already fighting this mob, if so do nothing.
+					fighting.add(player);
+				
+				player.sendMessage("You have joined a fellow toon in battle!");
+			}
 					
 			/*
 			 * dNiym 
@@ -91,7 +108,7 @@ public class MobInteraction implements Listener {
 		    	playerLoc.add(ld);
 		    	
 			
-		    	
+		    	System.out.println(ToonCraft.mobFightMode.size());
 		    	/*
 		    	 * Small issue with this code is signs or torches or grass, anything that isn't air but does not
 		    	 * inhibit movement will still let the monster walk right through it!
@@ -113,7 +130,7 @@ public class MobInteraction implements Listener {
 				mob.getLocation().subtract(0, 0, 1).getBlock().setType(Material.STONE);
 			}
 			
-			InventoryGUIs.GagsInventory(player);
+			//InventoryGUIs.GagsInventory(player);  //now handled in locationdata.
 			
 		}		
 	}
@@ -129,7 +146,7 @@ public class MobInteraction implements Listener {
 		
 		if(slot == 0)
 		{
-			if(ToonCraft.playerFightMode.contains(p)) //we are infact in combat
+			if(ToonCraft.playerFightMode.contains(p)) //we are in fact in combat
 			{
 				LocationData ld = LocationData.findLD(p);
 				new SquirtAttack(ld);
@@ -172,12 +189,19 @@ public class MobInteraction implements Listener {
 	
 
 	public static void mobBlockRemoval(LivingEntity mob, Player player) {   
-		if(ToonCraft.mobFightMode.contains(mob)) {
-			ToonCraft.mobFightMode.remove(mob);
+		if(ToonCraft.mobFightMode.containsKey(mob)) {
 			
-			if(player != null) {
-				ToonCraft.playerFightMode.remove(player);
-			}
+			
+			for(Player p:ToonCraft.mobFightMode.get(mob))  //loop through the players that may have been fighting this mob and free them up
+				if(p != null && ToonCraft.playerFightMode.contains(p))
+					ToonCraft.playerFightMode.remove(p);
+			
+			
+			
+			
+			//if(player != null) 
+				//ToonCraft.playerFightMode.remove(player);
+			
 						
 			if(mob.getLocation().add(0, 2, 0).getBlock().getType() == Material.STONE) {
 				mob.getLocation().add(0, 2, 0).getBlock().setType(Material.AIR);
@@ -194,6 +218,8 @@ public class MobInteraction implements Listener {
 			if(mob.getLocation().subtract(0, 0, 1).getBlock().getType() == Material.STONE) {
 				mob.getLocation().subtract(0, 0, 1).getBlock().setType(Material.AIR);
 			}
+			
+			ToonCraft.mobFightMode.remove(mob);  //then remove the mob from the hashmap.
 		}
 	}
 	

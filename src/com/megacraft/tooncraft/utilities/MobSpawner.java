@@ -5,6 +5,7 @@ import io.netty.util.internal.ThreadLocalRandom;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Creeper;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Zombie;
 
@@ -29,6 +30,24 @@ public class MobSpawner {
 			return 42;
 		}
 		return 6;
+	}
+	
+	public static int getCogLevel(int maxHealth) {
+		
+		switch(maxHealth)
+		{
+		case 6:
+			return 1;
+		case 12:
+			return 2;
+		case 30:
+			return 3;
+		case 42:
+			return 4;
+		}
+		
+		return 0;
+		
 	}
 	public static void FlunkySpawn(Location loc) {
 		

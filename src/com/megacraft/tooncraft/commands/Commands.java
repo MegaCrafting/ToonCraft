@@ -38,8 +38,11 @@ public class Commands implements Listener {
 		final String cmd = event.getMessage().toLowerCase();
 		final String[] args = cmd.split("\\s+");
 		Player player = event.getPlayer();
+		if(args == null || args.length == 0)
+			return;
+		
 		List<String> sendingArgs = Arrays.asList(args).subList(2, args.length);
-				
+		
 		if (Arrays.asList(cmdaliases).contains(args[0].toLowerCase()) && args.length < 2) 
 		{
 			
