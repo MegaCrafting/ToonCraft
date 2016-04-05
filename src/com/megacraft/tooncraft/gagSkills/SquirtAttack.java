@@ -1,7 +1,7 @@
 package com.megacraft.tooncraft.gagSkills;
 
 import com.megacraft.tooncraft.ToonCraft;
-import com.megacraft.tooncraft.timers.LocationData;
+import com.megacraft.tooncraft.timers.BattleData;
 
 import de.slikey.effectlib.Effect;
 import de.slikey.effectlib.EffectType;
@@ -11,31 +11,35 @@ import de.slikey.effectlib.util.ParticleEffect;
 
 public class SquirtAttack {
 
-	private LocationData ld;
+	private BattleData ld;
+	
+	
 	private Effect efx;
 	int step = 0;
 	long lastUpdate = 0l;
 	private long startTime = 0l;
 	private boolean cancel = false;
 	
-	public SquirtAttack(LocationData locData) {
+	public SquirtAttack(BattleData locData) {
 		
 		this.ld = locData;
 		
-		if(ld.getTarget() != null)  //had a target lets shoot at it.
+		
+		if(ld.getCurrentCog() != null)  //had a target lets shoot at it.
 		{
 			if(this.efx == null || this.efx.isDone()) {
 				this.efx = new ArcEffect(ToonCraft.em);
-				this.efx.setDynamicOrigin(new DynamicLocation(this.ld.getPlayer().getLocation()));
-				this.efx.setDynamicTarget(new DynamicLocation(this.ld.getTarget()));
+				this.efx.setDynamicOrigin(new DynamicLocation(this.ld.getCurrentPlayer().getPlayer().getLocation()));
+				this.efx.setDynamicTarget(new DynamicLocation(this.ld.getCurrentCog().getEntity()));
 				
 				((ArcEffect) this.efx).particle = ParticleEffect.WATER_SPLASH;
 				((ArcEffect) this.efx).type = EffectType.REPEATING;
 				this.efx.start();
-				
+		
 				
 			}
 		}
+		
 		if(this.cancel)
 		{
 			if(this.efx != null)

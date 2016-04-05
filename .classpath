@@ -2,9 +2,14 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="lib" path="H:/MegaCraft/spigot.jar"/>
-	<classpathentry kind="lib" path="H:/MegaCraft/Avatar/Vault.jar"/>
-	<classpathentry kind="lib" path="H:/MegaCraft/ToonCraft/InventoryAPI.jar"/>
-	<classpathentry kind="lib" path="H:/MegaCraft/Avatar/Essentials-2.x-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="C:/a/Minecraft Libraries/EssentialsX-2.0.1.jar"/>
+	<classpathentry kind="lib" path="C:/a/Minecraft Libraries/spigot-1.9.jar"/>
+	<classpathentry kind="lib" path="C:/a/Minecraft Libraries/Vault.jar"/>
+	<classpathentry kind="lib" path="C:/a/InventoryAPI.jar"/>
+	<classpathentry kind="lib" path="C:/a/Minecraft Libraries/worldguard-6.1.jar"/>
+	<classpathentry kind="lib" path="C:/a/Minecraft Libraries/worldedit-bukkit-6.1.jar"/>
+	<classpathentry kind="lib" path="C:/a/EffectLibD.jar"/>
+	<classpathentry kind="lib" path="C:/a/Minecraft Libraries/Holograms.jar"/>
+	<classpathentry kind="lib" path="C:/a/Minecraft Libraries/citizens.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

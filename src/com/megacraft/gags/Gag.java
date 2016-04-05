@@ -8,7 +8,7 @@ import com.megacraft.enums.Accuracy;
 import com.megacraft.enums.GagType;
 import com.megacraft.tooncraft.ToonCraft;
 import com.megacraft.tooncraft.gagSkills.SquirtAttack;
-import com.megacraft.tooncraft.timers.LocationData;
+import com.megacraft.tooncraft.timers.BattleData;
 
 public class Gag {
 
@@ -27,6 +27,7 @@ public class Gag {
 	private GagType type;
 	private int pos;
 	private List<String> lore = new ArrayList<String>();
+	private int xpReq;
 	public Gag(String name) {
 
 		this.name = name;
@@ -61,7 +62,7 @@ public class Gag {
 	 * This is gonna be a big daddy when it's done.   Because we need to handle all gag attack animations here.
 	 */
 	
-	public void runGag(LocationData ld) {
+	public void runGag(BattleData ld) {
 		switch(this.getType()) {
 		case DROP:
 			break;
@@ -84,26 +85,26 @@ public class Gag {
 		}
 	}
 
-	public void handleSquirt(LocationData ld)  //run effects for each squirt type.
+	public void handleSquirt(BattleData ld)  //run effects for each squirt type.
 	{
 		switch(this.level)
 		{
 		case 1:
+			
 			if(!ld.isAnimationRunning()) 
 			{
 				this.efx = new SquirtAttack(ld);
-				ld.setAnimationRunning(true);
 				ld.setTurnDelay(System.currentTimeMillis() + 1500);
+				ld.setAnimationRunning(true);
+			
 				
 			} else if(System.currentTimeMillis() >= ld.getTurnDelay()) {
 				((SquirtAttack) this.efx).Cancel();
 				ld.setTurnCounter(4);
-				System.out.println("Squrt stopped");
+			
 				ld.setTurnDelay(System.currentTimeMillis() + 3500);
 				ld.setAnimationRunning(false);
-			} else {
-				System.out.println("time check");
-			}
+			} 
 			break;
 		case 2:
 			break;

@@ -3,10 +3,15 @@ package com.megacraft.tooncraft.storage;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 import org.bukkit.entity.Player;
 
+import com.megacraft.enums.GagType;
+import com.megacraft.gags.Gag;
+import com.megacraft.tooncraft.TCPlayer;
 import com.megacraft.tooncraft.ToonCraft;
+import com.megacraft.tooncraft.playerGagData.PlayerGagData;
 
 public class DBConnection {
 
@@ -43,6 +48,23 @@ public class DBConnection {
 					+ "`Approved` TEXT(10));";
 			sql.modifyQuery(query);
 		} 
+		
+		if (!sql.tableExists("tc_player_gags"))
+		{
+			System.out.println("Creating tc_player_gags table.");
+			String query = "CREATE TABLE `tc_player_gags` ("
+					+ "`uuid` TEXT(36) PRIMARY KEY,"
+					+ "`Level` TEXT(4),"
+					+ "`Experience` TEXT(10),"
+					+ "`squirtGags` TEXT(36),"
+					+ "`throwGags` TEXT(36),"
+					+ "`soundGags` TEXT(36),"
+					+ "`lureGags` TEXT(36),"
+					+ "`trapGags` TEXT(36),"
+					+ "`toonupGags` TEXT(36),"
+					+ "`dropGags` TEXT(36));";
+			sql.modifyQuery(query);
+		}
 		if (!sql.tableExists("tc_GagsThrow")) {
 			System.out.println("Creating tc_GagsThrow table.");
 			String query = "CREATE TABLE `tc_GagsThrow` ("
@@ -75,7 +97,61 @@ public class DBConnection {
 		}
 		
 	}
-	
+
+	//load player gag info from database, and populate the data.
+	public static void getPlayerGags(TCPlayer tc) {
+		
+		
+		try {
+			String squirtGags = "1~5~0,0~0~0,0~0~0,0~0~0,0~0~0,0~0~0,0~0~0";
+			String otherGags = "0~0~0,0~0~0,0~0~0,0~0~0,0~0~0,0~0~0,0~0~0";
+			
+			String sql = "SELECT * FROM tc_player_gags WHERE uuid ='" + tc.getPlayer().getUniqueId().toString() + "';'";
+			ResultSet rs = DBConnection.sql.readQuery(sql);
+			if(!rs.next())
+			{
+				System.out.println("New Player added to table!");
+				tc.getGagLevels().put(GagType.SQUIRT, new PlayerGagData("squirtGags", squirtGags));
+				tc.getGagLevels().put(GagType.THROW, new PlayerGagData("throwGags", squirtGags));
+				tc.getGagLevels().put(GagType.TRAP, new PlayerGagData("trapGags", otherGags));
+				tc.getGagLevels().put(GagType.TOONUP, new PlayerGagData("toonupGags", otherGags));
+				tc.getGagLevels().put(GagType.SOUND, new PlayerGagData("soundGags", otherGags));
+				tc.getGagLevels().put(GagType.LURE, new PlayerGagData("lureGags", otherGags));
+				tc.getGagLevels().put(GagType.DROP, new PlayerGagData("dropGags", otherGags));
+				
+				
+				
+				squirtGags = "'" + squirtGags + "'";
+				otherGags = "'" + otherGags + "'";
+				
+				//note i typoed "throwGags" in the database table :\
+				sql = "INSERT INTO tc_player_gags (uuid,level,experience, squirtGags, throwGags, soundGags, lureGags,trapGags,toonupGags,dropGags) VALUES ('" +
+						tc.getPlayer().getUniqueId().toString() + "'," + tc.getLevel() + "," + tc.getExp() + ","  + squirtGags + "," +
+						squirtGags + "," + otherGags + "," + otherGags + "," + otherGags + "," + otherGags + "," + otherGags + ");";
+				
+				
+				DBConnection.sql.modifyQuery(sql);
+				
+				
+			} else {
+					tc.getGagLevels().put(GagType.SQUIRT, new PlayerGagData("squirtGags", rs.getString("squirtGags")));
+					tc.getGagLevels().put(GagType.THROW, new PlayerGagData("throwGags", rs.getString("throwGags")));
+					tc.getGagLevels().put(GagType.TRAP, new PlayerGagData("trapGags", rs.getString("trapGags")));
+					tc.getGagLevels().put(GagType.TOONUP, new PlayerGagData("toonupGags", rs.getString("toonupGags")));
+					tc.getGagLevels().put(GagType.SOUND, new PlayerGagData("soundGags", rs.getString("soundGags")));
+					tc.getGagLevels().put(GagType.LURE, new PlayerGagData("lureGags", rs.getString("lureGags")));
+					tc.getGagLevels().put(GagType.DROP, new PlayerGagData("dropGags", rs.getString("dropGags")));
+				
+			}
+		
+		
+		} catch (SQLException c) {
+			c.printStackTrace();
+		}
+		
+	}
+		
+		
 	public static void TCPlayerInfo(Player player, String type, String string) {
 		try {
 			PreparedStatement stafflist = DBConnection.sql.getConnection().prepareStatement(Select + "tc_playersInfo WHERE uuid = ?");
@@ -164,5 +240,17 @@ public class DBConnection {
 	
 	public static boolean isOpen() {
 		return isOpen;
+	}
+
+	public static void updatePlayerData(TCPlayer tcp) {
+		
+			Gag gag = tcp.getSelGag();
+			System.out.println("Updating Player Stats!");
+			PlayerGagData gd = tcp.getGagLevels().get(gag.getType());
+			
+			String sql = "Update tc_player_gags SET " + gd.getColumnId() + "='" + gd.getGagString() + "' WHERE uuid='" + tcp.getPlayer().getUniqueId().toString() + "';";
+			System.out.println("SQL: " + sql);
+			DBConnection.sql.modifyQuery(sql);
+		
 	}
 }

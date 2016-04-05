@@ -2,6 +2,7 @@ name: ToonCraft
 main: com.megacraft.tooncraft.ToonCraft
 version: 0.1
 author: chandlerpl
+depend: [Citizens, Holograms]
 authors: []
 
 commands:

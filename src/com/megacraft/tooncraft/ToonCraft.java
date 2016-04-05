@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bukkit.Bukkit;
@@ -13,7 +14,17 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
+
+
+
+
+
+
+
+
+
 
 
 
@@ -35,15 +46,21 @@ import org.bukkit.scheduler.BukkitTask;
 import com.megacraft.enums.Accuracy;
 import com.megacraft.enums.GagType;
 import com.megacraft.gags.Gag;
+import com.megacraft.tooncraft.cogs.Cog;
+
+
 import com.megacraft.tooncraft.commands.Commands;
 import com.megacraft.tooncraft.configuration.ConfigManager;
 import com.megacraft.tooncraft.listener.MainListener;
 import com.megacraft.tooncraft.listener.MobInteraction;
 import com.megacraft.tooncraft.storage.DBConnection;
+import com.megacraft.tooncraft.timers.BattleData;
 import com.megacraft.tooncraft.timers.FallTimer;
 import com.megacraft.tooncraft.timers.MobTimer;
 import com.megacraft.tooncraft.tutorial.TutorialListener;
 import com.megacraft.tooncraft.utilities.InventoryGUIs;
+import com.sainttx.holograms.api.HologramManager;
+import com.sainttx.holograms.api.HologramPlugin;
 
 import de.slikey.effectlib.EffectLib;
 import de.slikey.effectlib.EffectManager;
@@ -52,21 +69,46 @@ public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
 	
 	public static ToonCraft plugin;
 	public static Logger log;
-    
+    public static HologramManager holomanager;
 	public static Plugin wg;
 	public static List<BukkitTask> tasks = new ArrayList<BukkitTask>();
-	
     public static Boolean InventoryAPIEnabled = true;
-	public static List<LivingEntity> interactables = new ArrayList<LivingEntity>();
+    
+    //deprecated remove
+//	public static List<Cog> interactables = new ArrayList<Cog>();  //List for all Idle Mobs not in combat.
 	
-	public static HashMap<LivingEntity, List<Player>> mobFightMode = new HashMap<LivingEntity, List<Player>>();
 	
+	/*
+	 * Master cog list, populated as mobs spawn.   
+	 * Note:  battle data will ONLY be not null if the mob is engaged in combat, otherwise considered
+	 * interactable.
+	 */
+	public static HashMap<Cog, BattleData> cogList = new HashMap<Cog, BattleData>();  
+	
+	/*
+	 * battleList is the master list of all active battles.  It is put into a hash map for quick easy lookup.
+	 * use BattleData.findBD(player) to lookup actual data OR to create a new battle if its not set.
+	 * otherwise battleList.get(player) if you don't need to create a new battle or wish to just check if they're fighting or not.
+	 */
+	public static HashMap<Player, BattleData> battleList = new HashMap<Player,BattleData>();  
+	
+	
+	/*
+	 * LoadedGags represents all gags currently coded in, read from loadConfig(); 
+	 * which doesen't read them from a config so much but just creates them on plugin load.
+	 * this list has NOTHING to do with the players actual ability to use the skill, that info
+	 * is stored in the players TCPlayer (which should be created on join / first combat with a cog)
+	 */
 	public static HashMap<GagType, List<Gag>> loadedGags = new HashMap<GagType,List<Gag>>();
 	
-	//public static List<LivingEntity> mobFightMode = new ArrayList<LivingEntity>();
+	
+	
+	public static HashMap <Player, TCPlayer> tcPlayers = new HashMap<Player, TCPlayer>();  //player to custom player data map.
+	public static HashMap<Cog, List<Player>> mobFightMode = new HashMap<Cog, List<Player>>();
 	public static List<Player> playerFightMode = new ArrayList<Player>();
 
 	public static EffectManager em;
+	
 	@Override
 	public void onEnable() {
 		ToonCraft.plugin = this;
@@ -108,6 +150,15 @@ public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
 		EffectLib lib = EffectLib.instance();
 		em = new EffectManager(lib);
 		
+
+		if(getServer().getPluginManager().getPlugin("Citizens") == null || getServer().getPluginManager().getPlugin("Citizens").isEnabled() == false) {
+			getLogger().log(Level.SEVERE, "Citizens 2.0 not found or not enabled");
+			getServer().getPluginManager().disablePlugin(this);	
+			return;
+		}	
+		holomanager = ToonCraft.getPlugin(HologramPlugin.class).getHologramManager();
+		//net.citizensnpcs.api.CitizensAPI.getTraitFactory().registerTrait(net.citizensnpcs.api.trait.TraitInfo.create(CogNavigate.class));	
+	
 		
 	}
 	
@@ -120,7 +171,7 @@ public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
 			
 			Gag loadGag = new Gag("Squirting Flower");
 			loadGag.setLevel(1);
-		
+			
 			loadGag.setType(GagType.SQUIRT);
 			loadGag.setExpReq(0);  
 			loadGag.setPerm("Tooncraft.starter");  //unlocked after tutorial?
@@ -132,9 +183,9 @@ public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
 			loadGag.setAmmoStart(10);
 			loadGag.setAmmoMax(30);
 			loadGag.getLore().add(ChatColor.AQUA + "Fires a stream of water into the face of opposing cogs.");
-			loadGag.getLore().add(ChatColor.GRAY + "Accuracy"  + loadGag.getAccuracy().name());
-			loadGag.getLore().add(ChatColor.GRAY + "Minimum Dmg"  + loadGag.getMinDmg());
-			loadGag.getLore().add(ChatColor.GRAY + "Maximum Dmg"  + loadGag.getMaxDmg());
+			loadGag.getLore().add(ChatColor.GRAY + "Accuracy " + ChatColor.GREEN  + loadGag.getAccuracy().name());
+			loadGag.getLore().add(ChatColor.GRAY + "Minimum Dmg " + ChatColor.RED  + loadGag.getMinDmg());
+			loadGag.getLore().add(ChatColor.GRAY + "Maximum Dmg " + ChatColor.RED  + loadGag.getMaxDmg());
 			squirtGags.add(loadGag);
 			
 			loadGag = new Gag("Glass Of Water");
@@ -151,9 +202,9 @@ public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
 			loadGag.setAmmoStart(5);
 			loadGag.setAmmoMax(25);
 			loadGag.getLore().add(ChatColor.AQUA + "Dumps a bucket o' water on a single cog.");
-			loadGag.getLore().add(ChatColor.GRAY + "Accuracy"  + loadGag.getAccuracy().name());
-			loadGag.getLore().add(ChatColor.GRAY + "Minimum Dmg"  + loadGag.getMinDmg());
-			loadGag.getLore().add(ChatColor.GRAY + "Maximum Dmg"  + loadGag.getMaxDmg());
+			loadGag.getLore().add(ChatColor.GRAY + "Accuracy "  + ChatColor.GREEN + loadGag.getAccuracy().name());
+			loadGag.getLore().add(ChatColor.GRAY + "Minimum Dmg " + ChatColor.RED  + loadGag.getMinDmg());
+			loadGag.getLore().add(ChatColor.GRAY + "Maximum Dmg "  + ChatColor.RED + loadGag.getMaxDmg());
 
 
 			squirtGags.add(loadGag);
@@ -172,9 +223,9 @@ public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
 			loadGag.setAmmoStart(5);
 			loadGag.setAmmoMax(20);
 			loadGag.getLore().add(ChatColor.AQUA + "The Hippie Soaker 2000 Water Gun");
-			loadGag.getLore().add(ChatColor.GRAY + "Accuracy"  + loadGag.getAccuracy().name());
-			loadGag.getLore().add(ChatColor.GRAY + "Minimum Dmg"  + loadGag.getMinDmg());
-			loadGag.getLore().add(ChatColor.GRAY + "Maximum Dmg"  + loadGag.getMaxDmg());
+			loadGag.getLore().add(ChatColor.GRAY + "Accuracy " + ChatColor.GREEN + loadGag.getAccuracy().name());
+			loadGag.getLore().add(ChatColor.GRAY + "Minimum Dmg " + ChatColor.RED  + loadGag.getMinDmg());
+			loadGag.getLore().add(ChatColor.GRAY + "Maximum Dmg"  + ChatColor.RED + loadGag.getMaxDmg());
 
 			squirtGags.add(loadGag);			
 		
@@ -197,33 +248,29 @@ public class ToonCraft extends org.bukkit.plugin.java.JavaPlugin {
 		}
 		
 		
-		System.out.println("fightmode size:" + ToonCraft.mobFightMode.size());
-		if(ToonCraft.mobFightMode != null && ToonCraft.mobFightMode.size() > 0) {
-			
-			for(LivingEntity cog:ToonCraft.mobFightMode.keySet()) {
-				if(!ToonCraft.mobFightMode.get(cog).isEmpty())
-					for(Player p:ToonCraft.mobFightMode.get(cog))
-						ToonCraft.playerFightMode.remove(p);
+		
+		if(ToonCraft.cogList != null && !ToonCraft.cogList.isEmpty())
+		{
+			System.out.println("Cog list size: " + ToonCraft.cogList.size());
+			for(Cog cog:ToonCraft.cogList.keySet())
+			{
+				BattleData bd = ToonCraft.battleList.get(cog);
+				if(bd != null)
+					for(TCPlayer tcp:bd.getInvolvedPlayers())
+						tcp.endBattle();
 				
-				cog.damage(100);
+				if(cog.getEntity() != null)
+					cog.getEntity().damage(100);
 				MobInteraction.mobBlockRemoval(cog, null);
-			
+
 			}
-			ToonCraft.mobFightMode.clear();
+			ToonCraft.cogList.clear();
 		}
-			
-		/*
-		for(int i = 0; i < ToonCraft.mobFightMode.size(); i++) {
-			LivingEntity mob = mobFightMode.get(i);
-			mob.damage(100);
-			MobInteraction.mobBlockRemoval(mob, null);
-		}	
-		 */
+		ToonCraft.battleList.clear();
+		
+
 		for(BukkitTask bt: tasks)
 			bt.cancel();
 		
-		for(int i = 0; i < ToonCraft.interactables.size(); i++) {
-        	interactables.get(i).damage(100);
-		}		
 	}
 }

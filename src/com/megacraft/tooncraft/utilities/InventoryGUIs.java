@@ -22,7 +22,9 @@ import com.megacraft.gags.Gag;
 import com.megacraft.menuapi.Coordinates;
 import com.megacraft.menuapi.Menu;
 import com.megacraft.menuapi.MenuObject;
+import com.megacraft.tooncraft.TCPlayer;
 import com.megacraft.tooncraft.ToonCraft;
+import com.megacraft.tooncraft.playerGagData.PlayerGagData;
 import com.megacraft.tooncraft.storage.DBConnection;
 
 public class InventoryGUIs {
@@ -33,26 +35,39 @@ public class InventoryGUIs {
 	public static Menu getGagsInventory(Player player) {
 		
 
-		
+		TCPlayer tcp = TCPlayer.findTCP(player);
 		Inventory Inv = Bukkit.createInventory(null, 27, ChatColor.RED + "Please select a gag to use!");
 		Menu menu = new Menu(Inv);		
 		
 		inventoryContents.put(player, player.getInventory().getContents());
 		player.getInventory().clear();
-
-		
+	
 		for(GagType gt:ToonCraft.loadedGags.keySet())
 		{
-			System.out.println("Loading Gag Types: " + gt.name());
+//			System.out.println("Loading Gag Types: " + gt.name());
+			
+			
 			for(Gag gag:ToonCraft.loadedGags.get(gt))
 			{
-				System.out.println("Reading in gag: " + gag.getName());
-				ItemStack itemStack = new ItemStack(Material.EGG, gag.getAmmoStart());  //Figure out a way to save/load player ammo.
+	//			System.out.println("Reading in gag: " + gag.getName());
+				
+				
+				PlayerGagData pd = tcp.getGagLevels().get(gt);
+				int xpEarned = pd.getXpEarned()[0];
+				ItemStack itemStack = new ItemStack(Material.EGG , pd.plrAmmo(gag.getLevel()));  //Figure out a way to save/load player ammo.
 				
 				ItemMeta itemMeta = itemStack.getItemMeta(); // You must declare a separate variable for the meta for this to work. i.e. You can NOT just use: itemStack.getItemMeta().setDisplayName("§aWool");
 				
-				itemMeta.setDisplayName(gag.getName() + " Level " + gag.getLevel() + "~" + gag.getAmmoStart()); // Using §-codes instead of ChatColors is a personal preference of mine.
-				itemMeta.setLore(gag.getLore()); 
+				itemMeta.setDisplayName(gag.getName() + " Level " + gag.getLevel()); // Using §-codes instead of ChatColors is a personal preference of mine.
+				List<String> lore = gag.getLore();
+				if(xpEarned < gag.getExpReq())
+				{
+					lore.clear();
+					int diff = gag.getExpReq() - xpEarned;
+					lore.add(ChatColor.RED + "" + diff + " xp required to unlock.");
+				}
+				
+				itemMeta.setLore(lore); 
 				itemStack.setItemMeta(itemMeta); // Make sure you set the ItemMeta for things to work.
 				MenuObject menuObject = new MenuObject(itemStack);
 				menu.setMenuObjectAt(new Coordinates(menu, gag.getLevel(), gt.getRow()+1), menuObject);
